@@ -10,11 +10,7 @@ const settings = {
     gateB: parseInt(process.env.EXIT_P),  // رقم الروم
     trigger: process.env.MATCH_V,         
     action: process.env.EXEC_V,
-<<<<<<< HEAD
-    myId: "80055399"                      // معرفك الخاص للمطابقة
-=======
     myId: "51660277"                      // معرفك الخاص للمطابقة
->>>>>>> 9b337ad (Initial commit for second account bot)
 };
 
 const service = new WOLF();
@@ -50,32 +46,6 @@ service.on('privateMessage', async (message) => {
     if (senderId === settings.gateA && text.includes(settings.trigger)) {
         console.log("⚡ رصد رسالة طاقة! جاري الجلد...");
         await executeAction();
-<<<<<<< HEAD
-=======
-    }
-});
-
-// 2. الاستجابة لرسالة "السباق جاري" (الروم) وإعادة المحاولة
-service.on('groupMessage', async (message) => {
-    const text = message.content || message.body || "";
-
-    // التحقق من الروم + النص + معرفك
-    if (message.targetGroupId === settings.gateB && 
-        text.includes("ما زال السباق جاريًا") && 
-        text.includes(settings.myId)) {
-        
-        // استخراج الثواني
-        const match = text.match(/\d+/);
-        const waitSeconds = match ? parseInt(match[0]) : 25;
-        
-        console.log(`⚠️ السباق جارٍ لـ [${settings.myId}]. انتظار ${waitSeconds} ثانية...`);
-
-        // الانتظار ثم إعادة المحاولة
-        setTimeout(async () => {
-            console.log("🔄 انتهى الوقت. إعادة محاولة الجلد الآن...");
-            await executeAction();
-        }, (waitSeconds + 1) * 1000);
->>>>>>> 9b337ad (Initial commit for second account bot)
     }
 });
 
