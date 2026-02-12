@@ -3,7 +3,13 @@ name: Continuous Bot Runner
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */4 * * *'
+    # '0 22 * * *' تعني الساعة 10 مساءً بتوقيت جرينتش = 1 صباحاً بتوقيت السعودية
+    # البوت سيبدأ كل يوم في هذا الوقت، وإذا أردت استمراره كل 4 ساعات من ذلك الوقت:
+    - cron: '0 22/4 * * *'
+
+concurrency:
+  group: bot-runner-group
+  cancel-in-progress: true
 
 jobs:
   build:
