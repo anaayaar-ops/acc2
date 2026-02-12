@@ -1,5 +1,4 @@
 name: Continuous Bot Runner
-
 on:
   schedule:
     - cron: '0 */5 * * *' # تشغيل كل 5 ساعات لضمان بقاء السيرفر حياً
