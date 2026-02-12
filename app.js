@@ -24,13 +24,13 @@ const runFullCycle = async () => {
         await service.messaging.sendGroupMessage(settings.gateB, settings.action);
         
         console.log("⏳ انتظار 43 ثانية...");
-        await delay(43000);
+        await delay(34000);
         
         // الجلد الثاني
         console.log("⚔️ تنفيذ الجلد الثاني...");
         await service.messaging.sendGroupMessage(settings.gateB, settings.action);
         
-        await delay(2000); 
+        await delay(34000); 
         console.log("🏋️ إرسال أمر التدريب في الخاص...");
         await service.messaging.sendPrivateMessage(settings.gateA, "!س تدريب كل 60");
         
