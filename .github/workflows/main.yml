@@ -43,8 +43,3 @@ jobs:
           fi
           
           echo "🚀 بدء التشغيل المستمر..."
-<<<<<<< HEAD
-          npm start
-=======
-          npm start
->>>>>>> 9b337ad (Initial commit for second account bot)
