@@ -1,4 +1,5 @@
 name: Continuous Bot Runner
+
 on:
   schedule:
     - cron: '0 */5 * * *' # تشغيل كل 5 ساعات لضمان بقاء السيرفر حياً
@@ -43,3 +44,8 @@ jobs:
           fi
           
           echo "🚀 بدء التشغيل المستمر..."
+<<<<<<< HEAD
+          npm start
+=======
+          npm start
+>>>>>>> 9b337ad (Initial commit for second account bot)
