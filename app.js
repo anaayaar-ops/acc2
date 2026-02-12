@@ -1,0 +1,105 @@
+import 'dotenv/config';
+import wolfjs from 'wolf.js';
+
+const { WOLF } = wolfjs;
+
+const settings = {
+    identity: process.env.U_MAIL,
+    secret: process.env.U_PASS,
+    gateA: parseInt(process.env.ENTRY_P), // معرف البوت مصدر الطاقة
+    gateB: parseInt(process.env.EXIT_P),  // رقم الروم
+    trigger: process.env.MATCH_V,         
+    action: process.env.EXEC_V,
+<<<<<<< HEAD
+    myId: "80055399"                      // معرفك الخاص للمطابقة
+=======
+    myId: "51660277"                      // معرفك الخاص للمطابقة
+>>>>>>> 9b337ad (Initial commit for second account bot)
+};
+
+const service = new WOLF();
+
+// دالة الإرسال الأصلية الخاصة بك معالجة داخل وظيفة مستقلة لتسهيل استدعائها
+const executeAction = async () => {
+    try {
+        console.log("🎯 محاولة تنفيذ الإرسال...");
+        await service.messaging.sendGroupMessage(settings.gateB, settings.action);
+        console.log(`🚀 تم الإرسال بنجاح إلى [${settings.gateB}]`);
+    } catch (err) {
+        try {
+            await service.messaging().sendGroupMessage(settings.gateB, settings.action);
+            console.log(`🚀 تم الإرسال بنجاح (طريقة بديلة)`);
+        } catch (innerErr) {
+            console.error("❌ فشل الإرسال بكلا الطريقتين:", innerErr.message);
+        }
+    }
+};
+
+service.on('ready', () => {
+    console.log("------------------------------------------");
+    console.log("✅ System Online: Monitoring Signals...");
+    console.log(`🎯 ID: ${settings.myId} | Room: ${settings.gateB}`);
+    console.log("------------------------------------------");
+});
+
+// 1. الاستجابة لرسالة الطاقة (الخاص)
+service.on('privateMessage', async (message) => {
+    const senderId = message.authorId || message.sourceSubscriberId;
+    const text = message.content || message.body || "";
+
+    if (senderId === settings.gateA && text.includes(settings.trigger)) {
+        console.log("⚡ رصد رسالة طاقة! جاري الجلد...");
+        await executeAction();
+<<<<<<< HEAD
+=======
+    }
+});
+
+// 2. الاستجابة لرسالة "السباق جاري" (الروم) وإعادة المحاولة
+service.on('groupMessage', async (message) => {
+    const text = message.content || message.body || "";
+
+    // التحقق من الروم + النص + معرفك
+    if (message.targetGroupId === settings.gateB && 
+        text.includes("ما زال السباق جاريًا") && 
+        text.includes(settings.myId)) {
+        
+        // استخراج الثواني
+        const match = text.match(/\d+/);
+        const waitSeconds = match ? parseInt(match[0]) : 25;
+        
+        console.log(`⚠️ السباق جارٍ لـ [${settings.myId}]. انتظار ${waitSeconds} ثانية...`);
+
+        // الانتظار ثم إعادة المحاولة
+        setTimeout(async () => {
+            console.log("🔄 انتهى الوقت. إعادة محاولة الجلد الآن...");
+            await executeAction();
+        }, (waitSeconds + 1) * 1000);
+>>>>>>> 9b337ad (Initial commit for second account bot)
+    }
+});
+
+// 2. الاستجابة لرسالة "السباق جاري" (الروم) وإعادة المحاولة
+service.on('groupMessage', async (message) => {
+    const text = message.content || message.body || "";
+
+    // التحقق من الروم + النص + معرفك
+    if (message.targetGroupId === settings.gateB && 
+        text.includes("ما زال السباق جاريًا") && 
+        text.includes(settings.myId)) {
+        
+        // استخراج الثواني
+        const match = text.match(/\d+/);
+        const waitSeconds = match ? parseInt(match[0]) : 25;
+        
+        console.log(`⚠️ السباق جارٍ لـ [${settings.myId}]. انتظار ${waitSeconds} ثانية...`);
+
+        // الانتظار ثم إعادة المحاولة
+        setTimeout(async () => {
+            console.log("🔄 انتهى الوقت. إعادة محاولة الجلد الآن...");
+            await executeAction();
+        }, (waitSeconds + 1) * 1000);
+    }
+});
+
+service.login(settings.identity, settings.secret);

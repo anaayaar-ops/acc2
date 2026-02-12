@@ -1,0 +1,51 @@
+name: Continuous Bot Runner
+
+on:
+  schedule:
+    - cron: '0 */5 * * *' # تشغيل كل 5 ساعات لضمان بقاء السيرفر حياً
+  workflow_dispatch:
+
+concurrency:
+  group: wolf-bot-running
+  cancel-in-progress: true # إغلاق النسخة القديمة فور تشغيل نسخة جديدة لضمان عدم التداخل
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Execution with Break Logic
+        env:
+          U_MAIL: ${{ secrets.U_MAIL }}
+          U_PASS: ${{ secrets.U_PASS }}
+          ENTRY_P: ${{ secrets.ENTRY_P }}
+          EXIT_P: ${{ secrets.EXIT_P }}
+          MATCH_V: ${{ secrets.MATCH_V }}
+          EXEC_V: ${{ secrets.EXEC_V }}
+          NOTIFY_MSG: ${{ secrets.NOTIFY_MSG }}
+        run: |
+          # الحصول على الساعة الحالية بتوقيت مكة (UTC+3)
+          HOUR=$(date +%H -d "+3 hours")
+          
+          # التحقق من وقت الراحة (بين 4 و 8 صباحاً)
+          if [ "$HOUR" -ge 4 ] && [ "$HOUR" -lt 8 ]; then
+            echo "💤 توقيت الراحة حالياً.. السيرفر سيبقى متوقفاً حتى الساعة 8 صباحاً."
+            exit 0
+          fi
+          
+          echo "🚀 بدء التشغيل المستمر..."
+<<<<<<< HEAD
+          npm start
+=======
+          npm start
+>>>>>>> 9b337ad (Initial commit for second account bot)
