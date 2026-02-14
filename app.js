@@ -6,68 +6,78 @@ const { WOLF } = wolfjs;
 const settings = {
     identity: process.env.U_MAIL,
     secret: process.env.U_PASS,
-    gateA: parseInt(process.env.ENTRY_P), // بوت الطاقة (المصدر)
-    gateB: parseInt(process.env.EXIT_P),  // رقم الروم (الهدف)
+    gateA: parseInt(process.env.ENTRY_P), // معرف البوت مصدر الطاقة
+    gateB: parseInt(process.env.EXIT_P),  // رقم الروم
     trigger: process.env.MATCH_V,         
     action: process.env.EXEC_V,
-    myId: "51660277"                      // معرفك الخاص
+    myId: "80055399"                      // معرفك الخاص للمطابقة
 };
 
 const service = new WOLF();
 
-// دالة تنفيذ الإرسال (الجلد)
+// دالة الإرسال الأصلية الخاصة بك معالجة داخل وظيفة مستقلة لتسهيل استدعائها
 const executeAction = async () => {
     try {
+        console.log("🎯 محاولة تنفيذ الإرسال...");
         await service.messaging.sendGroupMessage(settings.gateB, settings.action);
-        console.log(`🚀 [${new Date().toLocaleTimeString()}] تم الجلد بنجاح في الروم [${settings.gateB}]`);
+        console.log(`🚀 تم الإرسال بنجاح إلى [${settings.gateB}]`);
     } catch (err) {
-        console.error("❌ فشل الإرسال للروم:", err.message);
+        try {
+            await service.messaging().sendGroupMessage(settings.gateB, settings.action);
+            console.log(`🚀 تم الإرسال بنجاح (طريقة بديلة)`);
+        } catch (innerErr) {
+            console.error("❌ فشل الإرسال بكلا الطريقتين:", innerErr.message);
+        }
     }
 };
 
 service.on('ready', async () => {
     console.log("------------------------------------------");
     console.log(`✅ تم تسجيل الدخول: ${service.currentSubscriber.nickname}`);
-    console.log("🛠️ بانتظار رسائل البوت المصدر...");
     console.log("------------------------------------------");
 
     try {
-        // إرسال أمر التدريب فقط عند بداية العمل
+        // إضافة كلمة async قبل () جعلت استخدام await ممكناً هنا
         await service.messaging.sendPrivateMessage(settings.gateA, "!س تدريب كل 1");
-        console.log(`✉️ تم إرسال أمر التدريب التلقائي إلى: ${settings.gateA}`);
+        console.log("✉️ تم إرسال أمر التدريب التلقائي بنجاح.");
     } catch (err) {
         console.error("❌ فشل إرسال أمر التدريب:", err.message);
     }
 });
 
-// مراقبة الرسائل
-service.on('message', async (message) => {
-    const text = message.content?.trim();
-    if (!text) return;
+// 1. الاستجابة لرسالة الطاقة (الخاص)
+service.on('privateMessage', async (message) => {
+    const senderId = message.authorId || message.sourceSubscriberId;
+    const text = message.content || message.body || "";
 
-    // 1. الاستجابة لرسالة الخاص (تنبيه الطاقة)
-    if (message.isPrivate && message.authorId === settings.gateA) {
-        if (text.includes(settings.trigger)) {
-            console.log("⚡ اكتشاف إشارة الطاقة.. جاري الجلد...");
-            await executeAction();
-        }
+    if (senderId === settings.gateA && text.includes(settings.trigger)) {
+        console.log("⚡ رصد رسالة طاقة! جاري الجلد...");
+        await executeAction();
     }
+});
 
-    // 2. الاستجابة لرسالة الروم (إعادة المحاولة)
-    if (message.isGroup && message.targetGroupId === settings.gateB) {
-        if (text.includes("ما زال السباق جاريًا") && text.includes(settings.myId)) {
-            
-            const match = text.match(/\d+/);
-            const waitSeconds = match ? parseInt(match[0]) : 20;
-            
-            console.log(`⚠️ زحام! انتظار ${waitSeconds} ثانية للإعادة...`);
+// 2. الاستجابة لرسالة "السباق جاري" (الروم) وإعادة المحاولة
+service.on('groupMessage', async (message) => {
+    const text = message.content || message.body || "";
 
-            setTimeout(async () => {
-                console.log("🔄 إعادة المحاولة الآن...");
-                await executeAction();
-            }, (waitSeconds + 1) * 1000);
-        }
+    // التحقق من الروم + النص + معرفك
+    if (message.targetGroupId === settings.gateB && 
+        text.includes("ما زال السباق جاريًا") && 
+        text.includes(settings.myId)) {
+        
+        // استخراج الثواني
+        const match = text.match(/\d+/);
+        const waitSeconds = match ? parseInt(match[0]) : 25;
+        
+        console.log(`⚠️ السباق جارٍ لـ [${settings.myId}]. انتظار ${waitSeconds} ثانية...`);
+
+        // الانتظار ثم إعادة المحاولة
+        setTimeout(async () => {
+            console.log("🔄 انتهى الوقت. إعادة محاولة الجلد الآن...");
+            await executeAction();
+        }, (waitSeconds + 1) * 1000);
     }
 });
 
 service.login(settings.identity, settings.secret);
+
