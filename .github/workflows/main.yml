@@ -1,49 +1,63 @@
 name: Continuous Bot Runner
 
 on:
-  workflow_dispatch:
   schedule:
-    # '0 22 * * *' تعني الساعة 10 مساءً بتوقيت جرينتش = 1 صباحاً بتوقيت السعودية
-    # البوت سيبدأ كل يوم في هذا الوقت، وإذا أردت استمراره كل 4 ساعات من ذلك الوقت:
-    - cron: '0 22/4 * * *'
+    # سيتم تشغيل البوت كل 4 ساعات (00:00, 04:00, 08:00, 12:00, 16:00, 20:00)
+    - cron: '0 */4 * * *' 
+  workflow_dispatch:
 
 concurrency:
-  group: bot-runner-group
-  cancel-in-progress: true
+  group: wolf-bot-running
+  # هذا السطر هو الأهم: سيقوم بقتل أي نسخة قديمة تعمل فور بدء نسخة جديدة
+  cancel-in-progress: true 
 
 jobs:
-  build:
+  run-bot:
     runs-on: ubuntu-latest
-
+    # نحدد مهلة 245 دقيقة (أكثر من 4 ساعات بقليل كحد أقصى للأمان)
+    timeout-minutes: 245 
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install Dependencies
+        run: npm install
 
-    - name: Execution
-      env:
-        U_MAIL: ${{ secrets.U_MAIL }}
-        U_PASS: ${{ secrets.U_PASS }}
-        ENTRY_P: ${{ secrets.ENTRY_P }}
-        EXIT_P: ${{ secrets.EXIT_P }}
-        MATCH_V: ${{ secrets.MATCH_V }}
-        EXEC_V: ${{ secrets.EXEC_V }}
-      run: |
-        # الحصول على الساعة الحالية بتوقيت مكة
-        HOUR=$(date +%H -d "+3 hours")
-        
-        # التحقق من وقت الراحة (بين 4 و 8 صباحاً)
-        if [ "$HOUR" -ge 4 ] && [ "$HOUR" -lt 8 ]; then
-          echo "توقيت الراحة حالياً.. السيرفر سيبقى متوقفاً حتى الساعة 8 صباحاً 💤"
-          exit 0
-        fi
-        
-        echo "🚀 بدء التشغيل المستمر..."
-        npm start
+      - name: Execution Logic
+        env:
+          U_MAIL: ${{ secrets.U_MAIL }}
+          U_PASS: ${{ secrets.U_PASS }}
+          ENTRY_P: ${{ secrets.ENTRY_P }}
+          EXIT_P: ${{ secrets.EXIT_P }}
+          MATCH_V: ${{ secrets.MATCH_V }}
+          EXEC_V: ${{ secrets.EXEC_V }}
+        run: |
+          # الحصول على الساعة الحالية بتوقيت مكة (UTC+3)
+          HOUR=$(date -u -d "+3 hours" +%H)
+          
+          echo "⏰ الساعة الآن بتوقيت مكة المكرمة: $HOUR"
+
+          # التوقف الإجباري إذا كانت الساعة بين 4 و 8 صباحاً
+          if [ "$HOUR" -ge 4 ] && [ "$HOUR" -lt 8 ]; then
+            echo "💤 توقيت الراحة (4 AM - 8 AM). السيرفر سيبقى خاملاً."
+            exit 0
+          fi
+          
+          echo "🚀 بدء التشغيل لمدة 4 ساعات..."
+          
+          # تشغيل البوت في الخلفية مع تسجيل المعرف (PID)
+          npm start & 
+          BOT_PID=$!
+          
+          # الانتظار لمدة 4 ساعات (14400 ثانية)
+          # ثم قتل العملية لإجبار النسخة القادمة على البدء بنظافة
+          sleep 14400 
+          
+          echo "🛑 انتهت الـ 4 ساعات، جاري إغلاق الجلسة للسماح بالتشغيل الجديد..."
+          kill $BOT_PID || true
