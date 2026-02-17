@@ -13,7 +13,11 @@ const settings = {
     myId: "51660277"                      // معرفك الخاص للمطابقة
 };
 
-const service = new WOLF();
+const service = new WOLF({
+    presence: {
+        onlineState: 2 // نطلب من المكتبة الدخول مباشرة بحالة "مشغول" 
+    }}) ;
+
 
 // دالة الإرسال الأصلية الخاصة بك معالجة داخل وظيفة مستقلة لتسهيل استدعائها
 const executeAction = async () => {
