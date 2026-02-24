@@ -6,79 +6,68 @@ const { WOLF } = wolfjs;
 const settings = {
     identity: process.env.U_MAIL,
     secret: process.env.U_PASS,
-    gateA: parseInt(process.env.ENTRY_P), // معرف البوت مصدر الطاقة
-    gateB: parseInt(process.env.EXIT_P),  // رقم الروم
+    gateA: parseInt(process.env.ENTRY_P), 
+    gateB: parseInt(process.env.EXIT_P),  
     trigger: process.env.MATCH_V,         
-    action: process.env.EXEC_V,
-    myId: "51660277"                      // معرفك الخاص للمطابقة
+    action: process.env.EXEC_V,           
+    myId: "51660277"                      
 };
 
-const service = new WOLF({
-    presence: {
-        onlineState: 2 // نطلب من المكتبة الدخول مباشرة بحالة "مشغول" 
-    }}) ;
+const service = new WOLF();
 
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-// دالة الإرسال الأصلية الخاصة بك معالجة داخل وظيفة مستقلة لتسهيل استدعائها
-const executeAction = async () => {
+const runFullCycle = async () => {
     try {
-        console.log("🎯 محاولة تنفيذ الإرسال...");
+        // الجلد الأول (بدون أقواس كما أكد الـ CMD)
+        console.log("⚔️ تنفيذ الجلد الأول...");
         await service.messaging.sendGroupMessage(settings.gateB, settings.action);
-        console.log(`🚀 تم الإرسال بنجاح إلى [${settings.gateB}]`);
+        
+        console.log("⏳ انتظار 43 ثانية...");
+        await delay(34000);
+        
+        // الجلد الثاني
+        console.log("⚔️ تنفيذ الجلد الثاني...");
+        await service.messaging.sendGroupMessage(settings.gateB, settings.action);
+        
+        await delay(34000); 
+        console.log("🏋️ إرسال أمر التدريب في الخاص...");
+        await service.messaging.sendPrivateMessage(settings.gateA, "!س تدريب كل 60");
+        
+        console.log("✅ الدورة اكتملت بنجاح.");
     } catch (err) {
-        try {
-            await service.messaging().sendGroupMessage(settings.gateB, settings.action);
-            console.log(`🚀 تم الإرسال بنجاح (طريقة بديلة)`);
-        } catch (innerErr) {
-            console.error("❌ فشل الإرسال بكلا الطريقتين:", innerErr.message);
-        }
+        console.error("❌ خطأ في التنفيذ:", err.message);
     }
 };
 
-service.on('ready', async () => {
+service.on('ready', () => {
     console.log("------------------------------------------");
-    console.log(`✅ تم تسجيل الدخول: ${service.currentSubscriber.nickname}`);
+    console.log("✅ System Online: Monitoring Signals...");
     console.log("------------------------------------------");
-
-    try {
-        // إضافة كلمة async قبل () جعلت استخدام await ممكناً هنا
-        await service.messaging.sendPrivateMessage(settings.gateA, "!س تدريب كل 1");
-        console.log("✉️ تم إرسال أمر التدريب التلقائي بنجاح.");
-    } catch (err) {
-        console.error("❌ فشل إرسال أمر التدريب:", err.message);
-    }
 });
 
-// 1. الاستجابة لرسالة الطاقة (الخاص)
 service.on('privateMessage', async (message) => {
     const senderId = message.authorId || message.sourceSubscriberId;
     const text = message.content || message.body || "";
 
     if (senderId === settings.gateA && text.includes(settings.trigger)) {
-        console.log("⚡ رصد رسالة طاقة! جاري الجلد...");
-        await executeAction();
+        console.log("⚡ رصد اكتمال الطاقة! بدء العمل...");
+        await runFullCycle();
     }
 });
 
-// 2. الاستجابة لرسالة "السباق جاري" (الروم) وإعادة المحاولة
 service.on('groupMessage', async (message) => {
     const text = message.content || message.body || "";
-
-    // التحقق من الروم + النص + معرفك
     if (message.targetGroupId === settings.gateB && 
         text.includes("ما زال السباق جاريًا") && 
         text.includes(settings.myId)) {
         
-        // استخراج الثواني
         const match = text.match(/\d+/);
-        const waitSeconds = match ? parseInt(match[0]) : 25;
+        const waitSeconds = match ? parseInt(match[0]) : 20;
         
-        console.log(`⚠️ السباق جارٍ لـ [${settings.myId}]. انتظار ${waitSeconds} ثانية...`);
-
-        // الانتظار ثم إعادة المحاولة
+        console.log(`⚠️ الروم مشغول. إعادة المحاولة بعد ${waitSeconds} ثانية...`);
         setTimeout(async () => {
-            console.log("🔄 انتهى الوقت. إعادة محاولة الجلد الآن...");
-            await executeAction();
+            await service.messaging.sendGroupMessage(settings.gateB, settings.action);
         }, (waitSeconds + 1) * 1000);
     }
 });
