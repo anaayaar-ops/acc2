@@ -10,7 +10,7 @@ const settings = {
     gateB: parseInt(process.env.EXIT_P),  
     trigger: process.env.MATCH_V,         
     action: process.env.EXEC_V,           
-    myId: "80055399"                      
+    myId: "51660277"                      
 };
 
 const service = new WOLF();
