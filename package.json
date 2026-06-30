@@ -1,14 +1,15 @@
 {
-  "name": "internal-process-manager",
+  "name": "wolf-status-bot",
   "version": "1.0.0",
-  "type": "module",
-  "description": "General purpose automation script",
-  "main": "app.js",
+  "description": "WOLF bot to set status to Busy",
+  "main": "app.cjs",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.cjs"
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "wolf.js": "^2.7.9"
-  }
+    "wolf.js": "latest",
+    "dotenv": "latest"
+  },
+  "author": "",
+  "license": "ISC"
 }
