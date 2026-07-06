@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.mjs"
   },
   "dependencies": {
-    "wolf.js": "latest",
-    "dotenv": "latest"
+    "wolf.js": "^x.x.x",
+    "dotenv": "^x.x.x"
   }
 }
