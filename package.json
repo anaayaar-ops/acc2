@@ -1,15 +1,13 @@
 {
   "name": "wolf-status-bot",
   "version": "1.0.0",
-  "description": "WOLF bot to set status to Busy",
-  "main": "app.cjs",
+  "type": "module", 
   "scripts": {
     "start": "node app.cjs"
   },
   "dependencies": {
-    "wolf.js": "latest",
-    "dotenv": "latest"
-  },
-  "author": "",
-  "license": "ISC"
+    "wolf.js": "^x.x.x",
+    "dotenv": "^x.x.x"
+  }
 }
+
