@@ -4,33 +4,49 @@ import wolfjs from 'wolf.js';
 const { WOLF } = wolfjs;
 const client = new WOLF();
 
-// دالة لاستخراج الدوال من الكائن
-function getMethods(obj, objName) {
-    if (!obj) {
-        console.log(`❌ ${objName} غير موجود.`);
-        return;
-    }
-    console.log(`\n--- الدوال المتاحة في ${objName} ---`);
+const CHANNEL_ID = 9969; // القناة المستهدفة
+
+client.on('ready', async () => {
+    console.log(`✅ البوت متصل ومستعد!`);
+    
+    // 1. تغيير حالة البوت (بما أنها موجودة في القائمة)
     try {
-        // استخراج الدوال من الـ prototype
-        const proto = Object.getPrototypeOf(obj);
-        const methods = Object.getOwnPropertyNames(proto).filter(prop => typeof obj[prop] === 'function');
-        console.log(methods);
-    } catch (e) {
-        console.log(`فشل في فحص ${objName}: ${e.message}`);
+        await client.setOnlineState(1); // 1 = متصل
+        console.log("تم ضبط حالة البوت إلى متصل.");
+    } catch (err) {
+        console.error("خطأ في ضبط الحالة:", err.message);
+    }
+
+    // 2. الانضمام للقناة
+    await client.group.joinById(CHANNEL_ID);
+    console.log(`تم الانضمام للقناة: ${CHANNEL_ID}`);
+
+    // 3. بدء حلقة المهام
+    startTaskLoop();
+});
+
+async function startTaskLoop() {
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    while (true) {
+        try {
+            // استخدام الدالة التي وجدناها في القائمة: sendGroupMessage
+            await client.messaging.sendGroupMessage(CHANNEL_ID, '!مد مهام');
+            console.log('✅ تم إرسال "!مد مهام"');
+
+            await sleep(1000); // انتظار ثانية
+
+            await client.messaging.sendGroupMessage(CHANNEL_ID, '!مد تحالف ايداع كل');
+            console.log('✅ تم إرسال "!مد تحالف ايداع كل"');
+
+            console.log('⏳ بانتظار 61 ثانية...');
+            await sleep(61000);
+        } catch (err) {
+            console.error("❌ خطأ أثناء الإرسال:", err.message);
+            await sleep(5000);
+        }
     }
 }
 
-client.on('ready', async () => {
-    console.log('🚀 البوت متصل! جاري استخراج خريطة الدوال...');
-    
-    // فحص الكائنات الأساسية
-    getMethods(client, 'client');
-    getMethods(client.messaging, 'client.messaging');
-    getMethods(client.group, 'client.group');
-    getMethods(client.subscriber, 'client.subscriber');
-    
-    console.log('\n--- انتهى الفحص. ابحث عن اسم الدالة الصحيحة في القائمة أعلاه ---');
-});
-
+// تسجيل الدخول
 client.login(process.env.U_MAIL, process.env.U_PASS);
