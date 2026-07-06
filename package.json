@@ -1,13 +1,12 @@
 {
   "name": "wolf-status-bot",
   "version": "1.0.0",
-  "type": "module", 
+  "type": "module",
   "scripts": {
-    "start": "node app.cjs"
+    "start": "node app.mjs"
   },
   "dependencies": {
     "wolf.js": "^x.x.x",
     "dotenv": "^x.x.x"
   }
 }
-
