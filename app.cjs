@@ -31,7 +31,7 @@ const executeAction = async () => {
 // 4. أحداث البوت
 client.on('ready', async () => {
     console.log("------------------------------------------");
-    console.log(`✅ تم تسجيل الدخول: ${client.currentSubscriber.nickname}`);
+    console.log(`✅ تم تسجيل الدخول: ${client.currentSubscriber?.nickname}`);
     console.log("------------------------------------------");
 
     try {
