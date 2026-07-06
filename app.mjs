@@ -1,5 +1,5 @@
 import 'dotenv/config';
-const wolf = require('wolf.js');
+import * as wolf from 'wolf.js';
 
 // 1. إعدادات البوت
 const settings = {
@@ -9,10 +9,10 @@ const settings = {
     gateB: parseInt(process.env.EXIT_P),  // رقم الروم
     trigger: process.env.MATCH_V,         
     action: process.env.EXEC_V,
-    myId: "51660277 "                      // معرفك الخاص للمطابقة
+    myId: "51660277"                      // معرفك الخاص للمطابقة
 };
 
-// 2. تعريف العميل (هنا يتم تعريف client قبل استخدامه)
+// 2. تعريف العميل
 const client = new wolf.WOLF({
     device: wolf.DeviceType.ANDROID
 });
@@ -31,7 +31,7 @@ const executeAction = async () => {
 // 4. أحداث البوت
 client.on('ready', async () => {
     console.log("------------------------------------------");
-    console.log(`✅ تم تسجيل الدخول: ${client.currentSubscriber?.nickname}`);
+    console.log(`✅ تم تسجيل الدخول: ${client.currentSubscriber?.nickname || "غير معروف"}`);
     console.log("------------------------------------------");
 
     try {
