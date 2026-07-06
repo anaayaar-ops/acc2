@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config';
 const wolf = require('wolf.js');
 
 // 1. إعدادات البوت
