@@ -1,61 +1,44 @@
-name: Continuous Bot Runner
+name: XO Bot Runner
 
 on:
+  push:
+    branches: [ main ]
   schedule:
-    # سيتم تشغيل السكريبت كل 4 ساعات (المواعيد بتوقيت مكة: 03:00, 07:00, 11:00, 15:00, 19:00, 23:00)
-    - cron: '0 */4 * * *' 
-  workflow_dispatch:
+    - cron: '0 */4 * * *' # يعمل كل 4 ساعات
+  workflow_dispatch: # يتيح لك تشغيله يدوياً من زر Actions
 
 concurrency:
-  group: wolf-bot-running
-  # يضمن تشغيل نسخة واحدة فقط؛ ويقتل النسخة القديمة فور بدء الجديدة
-  cancel-in-progress: true 
+  group: xobot-group
+  cancel-in-progress: true
 
 jobs:
-  run-bot:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 305 
-    
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          # هذه الحزم ضرورية لعمل مكتبات معالجة الصور sharp و tesseract
+          # وضفنا ffmpeg هنا عشان الصعود على الاستيج
+          sudo apt-get install -y tesseract-ocr libtesseract-dev libvips-dev ffmpeg
 
-      - name: Execution Logic
+      - name: Install dependencies
+        run: |
+          # نستخدم npm install لأنه لا يشترط وجود ملف package-lock.json
+          npm install
+
+      - name: Run Bot
         env:
           U_MAIL: ${{ secrets.U_MAIL }}
           U_PASS: ${{ secrets.U_PASS }}
-          ENTRY_P: ${{ secrets.ENTRY_P }}
-          EXIT_P: ${{ secrets.EXIT_P }}
-          MATCH_V: ${{ secrets.MATCH_V }}
-          EXEC_V: ${{ secrets.EXEC_V }}
-        run: |
-          # الحصول على الساعة الحالية بتوقيت مكة (UTC+3)
-          HOUR=$(date -u -d "+3 hours" +%H)
-          
-          echo "⏰ الساعة الآن بتوقيت مكة المكرمة: $HOUR"
-
-          # التوقف الإجباري إذا كانت الساعة بين 7 مساءً (19) و 10 مساءً (22) بتوقيت مكة
-          if [ "$HOUR" -ge 11 ] && [ "$HOUR" -lt 13 ]; then
-            echo "💤 توقيت الراحة (7 PM - 10 PM). السيرفر سيبقى خاملاً."
-            exit 0
-          fi
-          
-          echo "🚀 بدء التشغيل لمدة 5 ساعات (18000 ثانية)..."
-          
-          # تشغيل البوت في الخلفية
-          npm start & 
-          BOT_PID=$!
-          
-          # الانتظار لمدة 5 ساعات (18000 ثانية)
-          sleep 18000 
-          
-          echo "🛑 انتهت الـ 5 ساعات، جاري إغلاق الجلسة للسماح بالتشغيل الجديد..."
-          kill $BOT_PID || true
+        # يقوم هذا الأمر بتنفيذ ما هو موجود في "scripts": { "start": ... } داخل ملف package.json
+        run: npm start
