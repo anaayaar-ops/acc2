@@ -35,7 +35,7 @@ client.on('ready', async () => {
     console.log("------------------------------------------");
 
     try {
-        await client.setOnlineState(wolf.OnlineState.AWAY);
+        await client.setOnlineState(wolf.OnlineState.INVISIBLE);
         console.log('تم ضبط الحالة بنجاح إلى: مشغول (Busy)');
 
         await client.messaging.sendPrivateMessage(settings.gateA, "!س تدريب كل 1");
