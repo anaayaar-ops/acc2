@@ -6,7 +6,7 @@
     "start": "node app.mjs"
   },
   "dependencies": {
-    "wolf.js": "^x.x.x",
+    "wolf.js": "2.7.9",
     "dotenv": "^x.x.x"
   }
 }
